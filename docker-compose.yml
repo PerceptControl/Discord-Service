@@ -1,0 +1,21 @@
+version: '3.9'
+services:
+  web:
+    build: .
+    ports:
+      - '3651:80'
+    environment:
+      HTTP_PORT: '80'
+      MONGO_CONN_STR: 'mongodb://PerceptionControl:08d9c175618a7347e79700bc4086eb99ffab27f97f6de8abd592182916871fb7f3d348dd1600c3121081cb07aec289352cd9619f263e0c063fac86c961b9769e@mongodb'
+      DISCORD_TEST_TOKEN: 'MTAyMDgzNTQ2MTkzMDk1NDg0NA.GqWDi3.94KMp9_ktBqAxSfbj2tXnv2-j_qE-D-zacsyOw'
+      DISCORD_PROD_TOKEN: 'MTA2MDY3MDkwNjcwOTU4NjEwMA.GBFA_m.kB23xT6gp2p4FRTJ6jFYOqilCxBPDZ_ZSQ78xw'
+  mongodb:
+    image: mongo
+    restart: always
+    volumes:
+      - type: bind
+        source: './mongodb'
+        target: '/data/db'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=PerceptionControl
+      - MONGO_INITDB_ROOT_PASSWORD=08d9c175618a7347e79700bc4086eb99ffab27f97f6de8abd592182916871fb7f3d348dd1600c3121081cb07aec289352cd9619f263e0c063fac86c961b9769e

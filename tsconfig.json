@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+
+    /* Modules */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "NodeNext" /* Specify what module code is generated. */,
+    "moduleResolution": "nodenext",
+    "allowSyntheticDefaultImports": false,
+    "rootDir": "./src" /* Specify the root folder within your source files. */,
+    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
+    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+    "outDir": "./lib",
+    "declaration": true,
+    "declarationMap": true,
+    /* Type Checking */
+    "strict": true /* Enable all strict type-checking options. */,
+    "incremental": true
+  },
+
+  "include": ["src/**/*", "types", "jest.config.js"],
+  "exclude": ["node_modules", "src/**/*.spec.ts", "src/**/*.test.ts"]
+}
