@@ -1,18 +1,19 @@
 import type { Guild } from 'discord.js'
 import type { DiscordServiceStateManager } from '../Classes/state_manager.js'
-import { Logger } from '../Utils/logger.js'
+import { DiscordServiceChannelManager } from '../Classes/channel_manager.js'
 
-const logger = new Logger('Discord', 'Distributor')
+export function distribute(guild: Guild, manager: DiscordServiceStateManager) {
+  const [lobby_id, member_command] = [
+    manager.member_lobby_id,
+    manager.member_lobby_command,
+  ]
+  if (!lobby_id || !member_command) return manager.drop_member_from_channel()
 
-export function distribute(manager: DiscordServiceStateManager, guild: Guild) {
-  logger.trace(
-    `DISTRIBUTING. MANAGER: ${manager.channelName} GUILD: ${guild.name}`,
-  )
-  let memberCommand = manager.memberCommand
-  if (!memberCommand) return (manager.channel = null)
+  const channel = DiscordServiceChannelManager.find(guild, [
+    `mm-${lobby_id}-${member_command}`,
+  ])?.at(0)
 
-  let teamID = manager.memberTeamID
-  if (!teamID) return (manager.channel = null)
+  if (!channel) return manager.drop_member_from_channel()
 
-  manager.channel = guild
+  manager.channel = channel
 }

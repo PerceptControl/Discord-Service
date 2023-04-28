@@ -2,15 +2,15 @@ import mongoose from 'mongoose'
 import { Logger } from './Utils/logger.js'
 import express = require('express')
 
-import { DiscordClient } from './Classes/client.js'
+import { DiscordServiceCore } from './Classes/core.js'
 import { state_update } from './Controllers/voice_state_update.js'
 import { ServiceError } from './Utils/service_error.js'
 
-export const DISCORD_ROBOT = new DiscordClient(
+export const DISCORD_ROBOT = new DiscordServiceCore(
   process.env.DISCORD_TOKEN as string,
 )
-DISCORD_ROBOT.client.on('ready', (client) => console.log('discord bot ready'))
-DISCORD_ROBOT.client.on('voiceStateUpdate', state_update)
+DISCORD_ROBOT._client.on('ready', (client) => console.log('discord bot ready'))
+DISCORD_ROBOT._client.on('voiceStateUpdate', state_update)
 
 const express_logger = new Logger('core', 'express')
 const database_logger = new Logger('core', 'database')

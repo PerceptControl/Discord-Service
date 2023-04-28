@@ -1,84 +1,74 @@
-import type { VoiceState, VoiceChannel, Guild } from 'discord.js'
-import type { DiscordClient } from './client.js'
+import type { GuildBasedChannel, VoiceState } from 'discord.js'
 import { Logger } from '../Utils/logger.js'
 
 export class DiscordServiceStateManager {
-  private static logger = new Logger('Discord', 'State manager')
-  constructor(public state: VoiceState, private _client: DiscordClient) {}
+  private _logger = new Logger('Discord', 'State manager')
+  constructor(private _state: VoiceState) {}
 
-  getRole(roleName: string) {
-    return this.state.member?.roles.cache.find((role) => {
-      if (role.name != roleName) return false
-      return true
+  get channel_guild() {
+    return this._state.guild
+  }
+
+  get channel_lobby_id() {
+    return this._name_parts?.id
+  }
+
+  get channel_lobby_command() {
+    return this._name_parts?.command
+  }
+
+  get member_lobby_id() {
+    const role = this._state.member?.roles.cache.find((role) => {
+      if (role.name.startsWith('mm-')) return true
     })
+    if (role) return role.name.split('-')[1]
   }
 
-  get memberTeamID() {
-    let role = this.state.member?.roles.cache.find((role) => {
-      if (!role.name.startsWith('mm_team')) return false
-      return true
-    })
-
-    if (!role) return
-    return role.name.slice('mm_team#'.length)
-  }
-
-  get memberCommand() {
-    if (this.getRole('mm_command1')) return 'command1'
-    if (this.getRole('mm_command2')) return 'command2'
-    return
-  }
-
-  get channelCommand() {
-    if (this.state.channel?.name.includes('command1')) return 'command1'
-    if (this.state.channel?.name.includes('command2')) return 'command2'
-    return
-  }
-
-  get channelName() {
-    return this.state.channel?.name
+  get member_lobby_command() {
+    return this._state.member?.roles.cache.find((role) => {
+      if (role.name.startsWith('command')) return true
+    })?.name
   }
 
   get isCommandVoice() {
-    if (
-      !this.channelName?.startsWith('command') ||
-      !this.state.channel?.isVoiceBased
-    )
-      return false
+    if (!this._state.channel?.name.includes('command')) return false
     return true
   }
 
   get isDistributor() {
     if (
-      this.channelName == 'Распределитель' ||
-      this.channelName == 'Distributor'
+      this._state.channel?.name == 'Распределитель' ||
+      this._state.channel?.name == 'Distributor'
     )
       return true
     return false
   }
 
   get inChannel() {
-    if (!this.state.channel || this.state.channel.name == 'Распределитель')
+    if (!this._state.channel || this._state.channel.name == 'Распределитель')
       return false
     return true
   }
 
-  set channel(name: Guild | string | null) {
-    let team = this.memberTeamID
-    let command: 'command1' | 'command2' | undefined = this.memberCommand
-    if (!name || !team || !command) {
-      this.state.setChannel(null)
-      return
-    }
+  set channel(channel: GuildBasedChannel) {
+    if (!channel.isVoiceBased()) return
+    this._state.setChannel(channel).catch((e) => {
+      this._logger.critical(e)
+    })
+  }
 
-    this._client
-      .findChannelForMatch(name, team, command)
-      .then((channel) => {
-        if (!channel) return this.state.setChannel(null)
-        this.state.setChannel(channel as unknown as VoiceChannel).catch((e) => {
-          DiscordServiceStateManager.logger.critical(e)
-        })
-      })
-      .catch((e) => DiscordServiceStateManager.logger.warning(e))
+  drop_member_from_channel() {
+    this._state.setChannel(null).catch((e) => {
+      this._logger.critical(e)
+    })
+  }
+
+  private get _name_parts() {
+    const splits = this._state.channel?.name.split('-')
+    if (!splits) return
+    return {
+      id: splits[1],
+      command: splits[2],
+    }
   }
 }
